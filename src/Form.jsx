@@ -32,12 +32,21 @@ export default function Form() {
 
     // SHOW HIDE PASSWORD
     const [iconPass, setIconPass] = useState('eyeslash');
+    const [iconConfirmPass, setIconConfirmPass] = useState('eyeslash');
     function eyePass() {
 
         if (iconPass === 'eyeslash') {
             setIconPass('eye')
         } else {
             setIconPass('eyeslash');
+        }
+    }
+
+    function eyeConfirmPass() {
+        if (iconConfirmPass === 'eyeslash') {
+            setIconConfirmPass('eye')
+        } else {
+            setIconConfirmPass('eyeslash');
         }
     }
 
@@ -48,11 +57,33 @@ export default function Form() {
         email: '',
         nomor: '',
         asalProvinsi: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     })
 
     const handleChanges = (e) => {
-        setValues({ ...values, [e.target.name]: e.target.value })
+        const { name, value } = e.target;
+        setValues({ ...values, [name]: value });
+
+        // Real-time validation untuk confirmPassword
+        if (name === 'confirmPassword') {
+            setErros(prev => ({
+                ...prev,
+                confirmPassword: value !== values.password && value.length > 0 
+                    ? "Password tidak cocok!" 
+                    : ""
+            }));
+        }
+
+        // Real-time validation saat password berubah (update error confirmPassword jika sudah diisi)
+        if (name === 'password' && values.confirmPassword.length > 0) {
+            setErros(prev => ({
+                ...prev,
+                confirmPassword: values.confirmPassword !== value 
+                    ? "Password tidak cocok!" 
+                    : ""
+            }));
+        }
     }
 
     const [errors, setErros] = useState({});
@@ -87,6 +118,12 @@ export default function Form() {
             validationErr.password = "Masukkan Password!"
         } else if (values.password.length < 8 ) {
             validationErr.password = "Password harus memiliki setidaknya 8 karakter termasuk huruf kapital, angka atau simbol!"
+        }
+
+        if (!values.confirmPassword.trim()) {
+            validationErr.confirmPassword = "Konfirmasi Password!"
+        } else if (values.confirmPassword !== values.password) {
+            validationErr.confirmPassword = "Password tidak cocok!"
         }
         setErros(validationErr);
 
@@ -144,6 +181,20 @@ export default function Form() {
                             
                         </div>
                         {errors.password && <span className='text-sm text-red-500'>{errors.password}</span>}
+
+                        <label className="font-bold text-white text-lg">Konfirmasi Password : <span className="text-red-700 font-bold">*</span></label>
+                        <div className="w-full h-8 flex flex-row items-center justify-between  border border-gray-200 rounded-md p-2 hover:border-3 duration-3">
+                            <div className="w-[95%]">
+                                <input type={iconConfirmPass === 'eye' ? 'text' : 'password'} className="w-full h-full bg-transparant border-0 outline-0 text-white font-semibold " placeholder="Konfirmasi password" onChange={(e) => handleChanges(e)} name='confirmPassword' />
+                                
+                            </div>
+                            <div className="w=[5%] cursor-pointer" onClick={eyeConfirmPass} >
+                                {iconConfirmPass === 'eye' && <FontAwesomeIcon icon={faEye} color="white" />}
+                                {iconConfirmPass === 'eyeslash' && <FontAwesomeIcon icon={faEyeSlash} color="white" />}
+                            </div>
+                            
+                        </div>
+                        {errors.confirmPassword && <span className='text-sm text-red-500'>{errors.confirmPassword}</span>}
 
                         <button type="submit" className="font-bold w-full h-fit p-2 bg-blue-500/30 hover:bg-blue-500/80  text-gray-50 rounded-md text-lg active:scale-95 transition-all duration-300 cursor-pointer mt-4"> REGISTER </button>
                     </form >
